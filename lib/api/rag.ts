@@ -24,5 +24,16 @@ export async function queryRAG(request: RAGRequest): Promise<RAGResponse> {
 		throw new Error(`RAG API error: ${response.statusText}`);
 	}
 
-	return response.json();
+	const data = await response.json();
+
+	// Map backend response structure to frontend RAGResponse type
+	return {
+		answer: data.answer,
+		tier: data.tier_info?.tier || "standard",
+		case_type: data.tier_info?.case_type || null,
+		stage: data.tier_info?.detected_stages?.[0] || null,
+		citations: data.citations || [],
+		clarification_needed: data.clarification_needed || null,
+		confidence: "high", // Default, as backend doesn't currently return this
+	};
 }

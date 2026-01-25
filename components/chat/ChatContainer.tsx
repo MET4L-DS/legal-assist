@@ -53,6 +53,7 @@ export function ChatContainer() {
 				citations: response.citations,
 				timeline: response.timeline,
 				clarification_needed: response.clarification_needed,
+				confidence: response.confidence,
 				timestamp: Date.now(),
 			};
 

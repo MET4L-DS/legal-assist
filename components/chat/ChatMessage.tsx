@@ -109,7 +109,10 @@ export function ChatMessage({ message, onOptionSelect }: ChatMessageProps) {
 					{!isUser &&
 						message.timeline &&
 						message.timeline.length > 0 && (
-							<Timeline items={message.timeline} />
+							<Timeline
+								items={message.timeline}
+								confidence={message.confidence}
+							/>
 						)}
 
 					<div

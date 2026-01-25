@@ -1,14 +1,17 @@
 import { cn } from "@/lib/utils";
-import { Clock, AlertCircle, Briefcase, FileText } from "lucide-react";
+import { Clock, AlertCircle, Briefcase, FileText, Info } from "lucide-react";
 import { TimelineItem } from "@/lib/types/rag";
 import { Badge } from "@/components/ui/badge";
 
 interface TimelineProps {
 	items: TimelineItem[];
+	confidence?: "high" | "medium" | "low";
 }
 
-export function Timeline({ items }: TimelineProps) {
+export function Timeline({ items, confidence }: TimelineProps) {
 	if (!items || items.length === 0) return null;
+
+	const showWarning = confidence === "medium" || confidence === "low";
 
 	// Split items based on audience and anchor status
 	const victimCritical = items.filter(
@@ -59,6 +62,16 @@ export function Timeline({ items }: TimelineProps) {
 							/>
 						))}
 					</div>
+				</div>
+			)}
+
+			{/* Confidence Messaging Warning */}
+			{showWarning && (
+				<div className="flex items-start gap-2 bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-300 p-2.5 rounded-md text-xs border border-amber-100 dark:border-amber-900/50">
+					<Info className="w-4 h-4 shrink-0 mt-0.5" />
+					<p className="leading-relaxed opacity-90">
+						Some procedural steps may vary by facts or jurisdiction.
+					</p>
 				</div>
 			)}
 		</div>

@@ -38,7 +38,7 @@ A Next.js frontend for the Tiered Legal Retrieval-Augmented Generation (RAG) sys
 
 - **Strict Type Alignment**: Frontend types now strictly enforce the backend contract, specifically handling the nested `tier_info` structure via an adapter pattern.
 - **Enhanced Clarification Mode**: The chat input is strictly disabled when the AI requests clarification, preventing linear conversation breakage and ensuring users resolve ambiguity.
-- **Critical Timeline Visualization**: Displays a dedicated `Timeline` component populated by **structured backend data** (not regex parsing). It highlights mandatory steps, legal deadlines, and actionable stages with a distinct UI, ensuring legal accuracy.
+- **Critical Timeline Visualization**: Displays a dedicated `Timeline` component populated by **structured backend data** (not regex parsing). It visually distinguishes between "Critical User Actions" (Red) and "Procedural Steps" (Gray), and includes dynamic confidence warnings (ℹ️) when procedural certainty varies by jurisdiction.
 - **Trust Signals**: Permanent disclaimers regarding legal advice and "Copy" functionality for easy reference.
 
 ## 🛠️ Technology Stack

@@ -43,5 +43,6 @@ export async function queryRAG(request: RAGRequest): Promise<RAGResponse> {
 						"Please select an option to proceed:",
 				}
 			: null,
+		confidence: data.confidence || "high",
 	};
 }

@@ -25,6 +25,7 @@ export type RAGResponse = {
 		options: string[];
 		question: string;
 	} | null;
+	confidence?: "high" | "medium" | "low";
 };
 
 export type RAGContext = {
@@ -47,5 +48,6 @@ export type Message = {
 	citations?: string[];
 	timeline?: TimelineItem[];
 	clarification_needed?: RAGResponse["clarification_needed"];
+	confidence?: RAGResponse["confidence"];
 	timestamp: number;
 };

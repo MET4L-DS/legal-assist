@@ -253,10 +253,12 @@ Request:
 	"citations": ["BNS Section 103", "BNSS Section 184"],
 	"timeline": [
 		{
-			"stage": "fir",
-			"action": "File FIR at any police station",
+			"stage": "fir_registration",
+			"action": "File FIR / Zero FIR",
 			"deadline": "immediately",
 			"mandatory": true,
+			"is_anchor": true,
+			"audience": "victim",
 			"legal_basis": ["SOP (MHA/BPR&D) - FIR", "BNSS Section 173"]
 		},
 		{
@@ -264,12 +266,15 @@ Request:
 			"action": "Medical examination of victim",
 			"deadline": "24 hours",
 			"mandatory": true,
+			"is_anchor": true,
+			"audience": "victim",
 			"legal_basis": ["BNSS Section 184"]
 		}
 	],
 	"clarification_needed": null,
 	"confidence": "high | medium | low",
-	"api_version": "1.0"
+	"api_version": "1.0",
+	"system_notice": null
 }
 ```
 
@@ -277,13 +282,63 @@ Request:
 
 The `timeline` array contains structured procedural steps extracted from SOP/BNSS metadata (NOT from LLM output):
 
-| Field         | Type     | Description                                 |
-| ------------- | -------- | ------------------------------------------- |
-| `stage`       | string   | Procedural stage (fir, medical_examination) |
-| `action`      | string   | Human-readable action to take               |
-| `deadline`    | string?  | Time limit (24 hours, immediately, etc.)    |
-| `mandatory`   | boolean  | Whether this is a legal obligation          |
-| `legal_basis` | string[] | BNSS/SOP references                         |
+| Field         | Type     | Description                                          |
+| ------------- | -------- | ---------------------------------------------------- |
+| `stage`       | string   | Procedural stage (fir, medical_examination)          |
+| `action`      | string   | Human-readable action to take                        |
+| `deadline`    | string?  | Time limit (24 hours, immediately, etc.)             |
+| `mandatory`   | boolean  | Whether this is a legal obligation                   |
+| `is_anchor`   | boolean  | Whether this is a mandatory anchor for the case type |
+| `audience`    | string   | Target audience: `victim`, `police`, or `court`      |
+| `legal_basis` | string[] | BNSS/SOP references                                  |
+
+**Audience Classification:**
+
+The `audience` field classifies WHO the timeline is primarily relevant for:
+
+| Audience | Meaning                                          | Frontend Display                 |
+| -------- | ------------------------------------------------ | -------------------------------- |
+| `victim` | Direct victim action (FIR, medical exam, etc.)   | **Critical Timelines** (primary) |
+| `police` | Police/IO duties (investigation, evidence, etc.) | Later Procedural Steps           |
+| `court`  | Court/magistrate procedures (attachment, surety) | Later Procedural Steps           |
+
+**Frontend Display Rules:**
+
+- `is_anchor && audience === "victim"` → **Critical Timelines** (show prominently)
+- `mandatory && audience !== "victim"` → **Later Procedural Steps** (visually demote)
+
+**Timeline Anchors System:**
+
+The timeline extraction uses a 2-pass anchor system to ensure legally critical stages are always present:
+
+1. **Pass 1 (Anchor Resolution):** For each case type, mandatory "anchor" stages are identified and extracted first. These are stages that MUST exist for legally correct guidance.
+
+2. **Pass 2 (Secondary Timelines):** Additional timelines from retrieved blocks are added as secondary items.
+
+**Anchor Definitions by Case Type:**
+
+| Case Type        | Mandatory Anchors                                                      |
+| ---------------- | ---------------------------------------------------------------------- |
+| `rape`           | FIR registration, Medical examination, Statement recording, Protection |
+| `sexual_assault` | FIR registration, Medical examination, Statement recording, Protection |
+| `robbery`        | FIR registration, Investigation commencement                           |
+| `theft`          | FIR registration, Investigation commencement                           |
+
+Items with `is_anchor: true` appear first in the timeline and represent victim-critical stages.
+
+**System Notice (Anchor Failures):**
+
+For Tier-1 crimes (rape, sexual assault, POCSO), if mandatory anchors cannot be resolved from retrieved documents, a `system_notice` field is included:
+
+```json
+{
+	"system_notice": {
+		"type": "ANCHOR_INCOMPLETE",
+		"stage": "fir_registration",
+		"message": "Some mandatory procedural timelines could not be verified from retrieved documents."
+	}
+}
+```
 
 **Clarification Response (when ambiguous):**
 

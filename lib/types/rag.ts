@@ -4,6 +4,8 @@ export type TimelineItem = {
 	deadline: string | null;
 	mandatory: boolean;
 	legal_basis: string[];
+	is_anchor?: boolean;
+	audience?: "victim" | "police" | "court";
 };
 
 export type RAGResponse = {

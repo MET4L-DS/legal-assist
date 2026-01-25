@@ -1,116 +1,105 @@
----
+Yes, the timeline is _much_ better now
 
-# PART B — FRONTEND NEXT STEPS (After Backend Is Done)
+For the robbery example, this is a **correct and meaningful improvement**:
 
-### 🎯 Frontend Objective (This Phase)
+### ✅ What is now right
 
-* Stop inferring timelines from text
-* Render timelines deterministically
-* Improve procedural navigation without adding logic
+**Primary anchors are correct and first:**
 
----
+- FIR registration → _immediately_
+- Investigation commencement → _promptly_
 
-## B1. Update Frontend Types to Match Backend v1
+These are exactly the **victim-critical obligations** and they now come from **General SOP**, which is correct.
 
-### Action
+**Secondary timeline is present but downstream:**
 
-Update TypeScript types:
+- Section 107 attachment → _14 days_
 
-```ts
-type TimelineItem = {
-	stage: string;
-	action: string;
-	deadline: string | null;
-	mandatory: boolean;
-	legal_basis: string[];
-};
+This is legally valid and now **contextually acceptable** because:
 
-type RAGResponse = {
-	answer: string;
-	tier: string;
-	case_type: string | null;
-	stage: string | null;
-	citations: string[];
-	timeline: TimelineItem[];
-	clarification_needed?: {
-		type: string;
-		options: string[];
-		reason: string;
-	} | null;
-	confidence: "high" | "medium" | "low";
-};
-```
+- It is no longer the _first_ thing the user sees
+- Anchors are clearly marked (`is_anchor: true`)
 
-Do NOT add frontend-only fields.
+**Net effect:**
+The system now mirrors how a _competent police officer or legal aid clinic_ would explain the process.
+
+So yes — **your instinct is right, this version is better**.
 
 ---
 
-## B2. Replace Timeline Heuristics With Structured Data
+## 2️⃣ What is still imperfect (and why that’s okay)
 
-### Action
+There is **one remaining issue**, but it is no longer an architectural flaw — it’s a **presentation & prioritization refinement**.
 
-- Remove regex / keyword-based timeline detection
-- Render timeline **only from `response.timeline`**
+### ⚠️ Issue: Secondary timelines still look “mandatory”
 
-### UI Rules
+In your robbery timeline:
 
-- If `timeline.length === 0` → hide timeline component
-- Mandatory items should be visually emphasized
-- Deadlines should be highlighted (clock / alert)
+> SOP ON SEC 107 ATTACHMENT, FORFEITURE OR RESTORATION OF PROPERTY – 14 days
+> **Mandatory Step**
 
----
+Legally, this is mandatory **for the system**, not for the **victim’s immediate action**.
 
-## B3. Improve Timeline UX (No Logic Added)
+So the system is **legally correct**, but the UX signal is slightly misleading.
 
-### Suggested Rendering
-
-Each timeline item shows:
-
-- Action
-- Deadline (if any)
-- Stage label
-- Legal basis (collapsed)
-
-Frontend does NOT calculate or reorder timelines.
+This is **not a backend correctness bug anymore** — it’s a **frontend semantics issue**.
 
 ---
 
-## B4. Enable Stage-Based Re-Querying (Optional but Powerful)
+## 3️⃣ What NOT to do next (important)
 
-### Action
+Before I say what to do, let me be very explicit about what you should **not** do anymore:
 
-- Allow user to click a timeline stage
-- Re-query backend with:
+❌ Do **not** add more retrieval
+❌ Do **not** add parallel / multi-threaded RAG
+❌ Do **not** add more SOP documents
+❌ Do **not** let the LLM “summarize timelines”
+❌ Do **not** tweak embedding weights to fix UX
+
+You have already solved the _hard problem_:
+**getting the right legal obligations into structured data**.
+
+From now on, changes should be **low-risk and incremental**.
+
+---
+
+## 4️⃣ The correct NEXT STEPS (in order)
+
+### 🔴 NEXT STEP 1 — Backend: finalize timeline semantics (small but important)
+
+You already have:
 
 ```json
-context: { "last_stage": "medical_examination" }
+{
+  "is_anchor": true | false,
+  "mandatory": true | false
+}
 ```
 
-Backend decides what to return.
+Add **one more field**:
+
+```json
+"audience": "victim" | "police" | "court"
+```
+
+**Why this matters:**
+
+- FIR & investigation → `audience: victim`
+- Property attachment → `audience: court/police`
+
+This is **not retrieval logic** — it’s classification of already-known facts.
+
+This makes the system future-proof and avoids hacks later.
 
 ---
 
-## B5. Final UX Hardening
+### 🔴 NEXT STEP 2 — Frontend: visually demote non-victim timelines
 
-### Action
+Once `audience` exists:
 
-- Ensure clarification mode blocks free text
-- Ensure backend is the single source of truth
-- Add fallback UI for empty responses
+**Frontend rules (very simple):**
 
----
+- `is_anchor && audience === "victim"` → **Critical Timelines**
+- `mandatory && audience !== "victim"` → **Later Procedural Steps**
 
-# GLOBAL RULES (DO NOT VIOLATE)
-
-- ❌ Frontend must not infer legal facts
-- ❌ Backend must not hallucinate timelines
-- ❌ LLM must not invent deadlines
-- ❌ No agentic planning
-
----
-
-## Final Guiding Principle
-
-> **If something is a legal obligation, it must be structured data.**
->
-> Language is for explanation. Structure is for law.
+This fixes the remaining UX flaw **without touching the backend logic again**.

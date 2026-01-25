@@ -1,3 +1,11 @@
+export type TimelineItem = {
+	stage: string;
+	action: string;
+	deadline: string | null;
+	mandatory: boolean;
+	legal_basis: string[];
+};
+
 export type RAGResponse = {
 	answer: string;
 	tier:
@@ -9,6 +17,7 @@ export type RAGResponse = {
 	case_type: string | null;
 	stage: string | null;
 	citations: string[];
+	timeline: TimelineItem[];
 	clarification_needed?: {
 		type: string;
 		options: string[];
@@ -34,6 +43,7 @@ export type Message = {
 	content: string;
 	tier?: RAGResponse["tier"];
 	citations?: string[];
+	timeline?: TimelineItem[];
 	clarification_needed?: RAGResponse["clarification_needed"];
 	timestamp: number;
 };

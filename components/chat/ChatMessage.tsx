@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { BookOpen, Clock, Copy } from "lucide-react";
 import { ClarificationPrompt } from "./ClarificationPrompt";
-import { Timeline, TimelineItem } from "./Timeline";
+import { Timeline } from "./Timeline";
 import ReactMarkdown from "react-markdown";
 import { useState } from "react";
 import { Button } from "../ui/button";
@@ -48,47 +48,9 @@ const getTierInfo = (tier: string) => {
 	}
 };
 
-const extractTimeSensitiveInfo = (content: string): TimelineItem[] => {
-	const sentences = content.split(/(?<=[.!?])\s+/);
-	const urgentPatterns = [
-		{ regex: /within (\d+\s+(?:hours|days|minutes))/i },
-		{ regex: /(\d+\s+(?:hours|days|minutes))/i },
-		{ regex: /(immediately)/i },
-		{ regex: /(without delay)/i },
-		{ regex: /(urgent)/i },
-	];
-
-	const results: TimelineItem[] = [];
-
-	sentences.forEach((sentence) => {
-		for (const pattern of urgentPatterns) {
-			const match = sentence.match(pattern.regex);
-			if (match) {
-				const time = match[1];
-				const description = sentence.replace(/\*\*/g, "").trim();
-
-				// Avoid duplicates if needed, typically basic check
-				if (!results.some((r) => r.description === description)) {
-					results.push({
-						time: time,
-						description: description,
-					});
-				}
-				break;
-			}
-		}
-	});
-
-	return results.slice(0, 3);
-};
-
 export function ChatMessage({ message, onOptionSelect }: ChatMessageProps) {
 	const isUser = message.role === "user";
 	const tierInfo = message.tier ? getTierInfo(message.tier) : null;
-	const urgentInfo =
-		!isUser && message.content
-			? extractTimeSensitiveInfo(message.content)
-			: [];
 	const [copied, setCopied] = useState(false);
 
 	const handleCopy = () => {
@@ -144,7 +106,11 @@ export function ChatMessage({ message, onOptionSelect }: ChatMessageProps) {
 						</Badge>
 					)}
 
-					{urgentInfo.length > 0 && <Timeline items={urgentInfo} />}
+					{!isUser &&
+						message.timeline &&
+						message.timeline.length > 0 && (
+							<Timeline items={message.timeline} />
+						)}
 
 					<div
 						className={cn(

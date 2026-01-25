@@ -1,31 +1,37 @@
-# ✅ FRONTEND — NEXT STEPS (Next.js + React + shadcn)
+---
 
-## 🎯 Frontend Goal (Next Phase)
+# PART B — FRONTEND NEXT STEPS (After Backend Is Done)
 
-Make the UI:
+### 🎯 Frontend Objective (This Phase)
 
-- Trustworthy
-- Actionable
-- Calm
-- Citizen-centric
-
-No legal reasoning. No guessing.
+* Stop inferring timelines from text
+* Render timelines deterministically
+* Improve procedural navigation without adding logic
 
 ---
 
-## 🔴 FRONTEND STEP 1 — Align Strictly to Backend Contract
+## B1. Update Frontend Types to Match Backend v1
 
 ### Action
 
-Update frontend types to match **final backend response**:
+Update TypeScript types:
 
 ```ts
+type TimelineItem = {
+	stage: string;
+	action: string;
+	deadline: string | null;
+	mandatory: boolean;
+	legal_basis: string[];
+};
+
 type RAGResponse = {
 	answer: string;
 	tier: string;
 	case_type: string | null;
 	stage: string | null;
 	citations: string[];
+	timeline: TimelineItem[];
 	clarification_needed?: {
 		type: string;
 		options: string[];
@@ -35,101 +41,76 @@ type RAGResponse = {
 };
 ```
 
-🚫 Do NOT read `tier_info`
-🚫 Do NOT infer tier/stage yourself
+Do NOT add frontend-only fields.
 
 ---
 
-## 🔴 FRONTEND STEP 2 — Improve Clarification UX (When Backend Signals)
+## B2. Replace Timeline Heuristics With Structured Data
 
-### UI Behavior
+### Action
 
-When `clarification_needed` exists:
+- Remove regex / keyword-based timeline detection
+- Render timeline **only from `response.timeline`**
 
-- Pause normal chat flow
-- Render clarification prompt
-- Disable free-text input temporarily
-- Show **buttons only**
+### UI Rules
 
-Example copy (generic, reusable):
-
-> “To guide you accurately, I need one small clarification.”
-
-### On user selection
-
-- Send next `/rag/query`
-- Include updated `context`
-- Resume normal flow
+- If `timeline.length === 0` → hide timeline component
+- Mandatory items should be visually emphasized
+- Deadlines should be highlighted (clock / alert)
 
 ---
 
-## 🟡 FRONTEND STEP 3 — Highlight Time-Critical Information
+## B3. Improve Timeline UX (No Logic Added)
 
-### Why
+### Suggested Rendering
 
-Timelines are the **most important actionable data**.
+Each timeline item shows:
 
-### Action (frontend-only)
+- Action
+- Deadline (if any)
+- Stage label
+- Legal basis (collapsed)
 
-Detect phrases like:
-
-- “within 24 hours”
-- “immediately”
-- “without delay”
-
-Render them using:
-
-- `Alert` (shadcn)
-- Clock icon
-- Subtle highlight
-
-No backend changes needed.
+Frontend does NOT calculate or reorder timelines.
 
 ---
 
-## 🟡 FRONTEND STEP 4 — Strengthen Trust Signals
+## B4. Enable Stage-Based Re-Querying (Optional but Powerful)
 
-Add:
+### Action
 
-- Persistent disclaimer (“Informational, not legal advice”)
-- Tier badge (“General Procedure”, “Evidence Standards”, etc.)
-- “Sources used” always visible (collapsed OK)
+- Allow user to click a timeline stage
+- Re-query backend with:
 
-This increases **credibility**, not clutter.
+```json
+context: { "last_stage": "medical_examination" }
+```
 
----
-
-## 🟢 FRONTEND STEP 5 — UX Polish (Optional but Valuable)
-
-Low risk, high polish:
-
-- Copy-to-clipboard for steps
-- Print / export (later)
-- Keyboard navigation
-- Error fallback (“Backend unavailable”)
+Backend decides what to return.
 
 ---
 
-# 🚫 WHAT NOT TO DO (Both Sides)
+## B5. Final UX Hardening
 
-- ❌ No agentic AI
-- ❌ No backend memory
-- ❌ No frontend legal logic
-- ❌ No LangChain re-introduction
-- ❌ No SOP rendering decisions in UI
+### Action
+
+- Ensure clarification mode blocks free text
+- Ensure backend is the single source of truth
+- Add fallback UI for empty responses
 
 ---
 
-# 🧠 Final Status Check
+# GLOBAL RULES (DO NOT VIOLATE)
 
-At this point, your system is:
+- ❌ Frontend must not infer legal facts
+- ❌ Backend must not hallucinate timelines
+- ❌ LLM must not invent deadlines
+- ❌ No agentic planning
 
-| Layer        | Status                           |
-| ------------ | -------------------------------- |
-| RAG logic    | ✅ Mature                        |
-| SOP coverage | ✅ Strong                        |
-| Backend API  | 🟡 Needs adapter + clarification |
-| Frontend UI  | 🟡 Needs alignment + polish      |
-| Architecture | ✅ Solid                         |
+---
 
-You are **very close** to a demo-ready, portfolio-grade, or MVP-grade system.
+## Final Guiding Principle
+
+> **If something is a legal obligation, it must be structured data.**
+>
+> Language is for explanation. Structure is for law.

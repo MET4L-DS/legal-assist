@@ -8,9 +8,14 @@ import { FormEvent, useState } from "react";
 interface ChatInputProps {
 	onSend: (message: string) => void;
 	disabled?: boolean;
+	placeholder?: string;
 }
 
-export function ChatInput({ onSend, disabled }: ChatInputProps) {
+export function ChatInput({
+	onSend,
+	disabled,
+	placeholder = "Ask a legal question...",
+}: ChatInputProps) {
 	const [input, setInput] = useState("");
 
 	const handleSubmit = (e: FormEvent) => {
@@ -24,12 +29,12 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
 	return (
 		<form
 			onSubmit={handleSubmit}
-			className="flex w-full items-center gap-2 p-4 border-t bg-background"
+			className="flex w-full items-center gap-2"
 		>
 			<Input
 				value={input}
 				onChange={(e) => setInput(e.target.value)}
-				placeholder="Ask a legal question..."
+				placeholder={placeholder}
 				className="flex-1"
 				disabled={disabled}
 			/>

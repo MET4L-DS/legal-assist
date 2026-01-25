@@ -152,6 +152,11 @@ export function ChatContainer() {
 				<ChatInput
 					onSend={(text) => handleSend(text)}
 					disabled={loading || isClarificationPending}
+					placeholder={
+						isClarificationPending
+							? "Please select an option above to continue..."
+							: undefined
+					}
 				/>
 				<p className="text-[10px] text-center text-muted-foreground">
 					Information provided is for guidance only and does not

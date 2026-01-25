@@ -1,7 +1,25 @@
+"use client";
+
+import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { Clock, AlertCircle, Briefcase, FileText, Info } from "lucide-react";
+import {
+	Clock,
+	AlertCircle,
+	Briefcase,
+	FileText,
+	Info,
+	ChevronDown,
+	Copy,
+	Check,
+} from "lucide-react";
 import { TimelineItem } from "@/lib/types/rag";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+	Collapsible,
+	CollapsibleContent,
+	CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 interface TimelineProps {
 	items: TimelineItem[];
@@ -9,6 +27,9 @@ interface TimelineProps {
 }
 
 export function Timeline({ items, confidence }: TimelineProps) {
+	const [isProceduralOpen, setIsProceduralOpen] = useState(false);
+	const [isCopied, setIsCopied] = useState(false);
+
 	if (!items || items.length === 0) return null;
 
 	const showWarning = confidence === "medium" || confidence === "low";
@@ -21,48 +42,129 @@ export function Timeline({ items, confidence }: TimelineProps) {
 		(i) => !(i.is_anchor && i.audience === "victim"),
 	);
 
+	const handleCopy = () => {
+		const lines: string[] = [];
+
+		if (victimCritical.length > 0) {
+			lines.push("CRITICAL ACTIONS (YOU):");
+			victimCritical.forEach((i) => {
+				lines.push(
+					`[ ] ${i.action}${i.deadline ? ` (Due: ${i.deadline})` : ""}`,
+				);
+			});
+			lines.push("");
+		}
+
+		if (proceduralSteps.length > 0) {
+			lines.push("PROCEDURAL STEPS:");
+			proceduralSteps.forEach((i) => {
+				lines.push(`[ ] ${i.action} (${i.stage})`);
+			});
+			lines.push("");
+		}
+
+		if (showWarning) {
+			lines.push(
+				"NOTE: Some procedural steps may vary by facts or jurisdiction.",
+			);
+		}
+
+		navigator.clipboard.writeText(lines.join("\n"));
+		setIsCopied(true);
+		setTimeout(() => setIsCopied(false), 2000);
+	};
+
 	return (
-		<div className="flex flex-col gap-4 mb-4">
+		<div className="flex flex-col gap-4 mb-4 relative group">
+			{/* Copy Button */}
+			<div className="absolute top-2 right-2 z-30 opacity-0 group-hover:opacity-100 transition-opacity">
+				<Button
+					variant="secondary"
+					size="icon"
+					className="h-6 w-6 rounded-full shadow-sm bg-background/80 backdrop-blur border"
+					onClick={handleCopy}
+					title="Copy checklist"
+				>
+					{isCopied ? (
+						<Check className="h-3 w-3 text-green-600" />
+					) : (
+						<Copy className="h-3 w-3 text-muted-foreground" />
+					)}
+				</Button>
+			</div>
+
 			{/* Critical Victim Actions - High Visibility (Red) */}
 			{victimCritical.length > 0 && (
-				<div className="bg-red-50/50 dark:bg-red-950/10 rounded-lg p-4 border border-red-100 dark:border-red-900/50 shadow-sm">
-					<div className="flex items-center gap-2 mb-3 text-red-700 dark:text-red-400">
-						<Clock className="w-4 h-4" />
-						<span className="text-xs font-bold uppercase tracking-wider">
-							Critical Actions (You)
-						</span>
+				<div className="bg-red-50/50 dark:bg-red-950/10 rounded-lg border border-red-100 dark:border-red-900/50 shadow-sm overflow-hidden">
+					<div className="sticky top-0 z-10 bg-red-50/95 dark:bg-red-950/95 backdrop-blur supports-[backdrop-filter]:bg-red-50/50 p-4 border-b border-red-100/50 dark:border-red-900/50">
+						<div className="flex items-center gap-2 text-red-700 dark:text-red-400">
+							<Clock className="w-4 h-4" />
+							<span className="text-xs font-bold uppercase tracking-wider">
+								Critical Actions (You)
+							</span>
+						</div>
 					</div>
-					<div className="relative border-l-2 border-red-200 dark:border-red-900 pl-4 ml-2 space-y-6">
-						{victimCritical.map((item, idx) => (
-							<TimelineItemRow
-								key={`crit-${idx}`}
-								item={item}
-								variant="critical"
-							/>
-						))}
+					<div className="p-4 pt-4">
+						<div className="relative border-l-2 border-red-200 dark:border-red-900 pl-4 ml-2 space-y-6">
+							{victimCritical.map((item, idx) => (
+								<TimelineItemRow
+									key={`crit-${idx}`}
+									item={item}
+									variant="critical"
+								/>
+							))}
+						</div>
 					</div>
 				</div>
 			)}
 
 			{/* System/Procedural Steps - Demoted Visibility (Gray/Slate) */}
 			{proceduralSteps.length > 0 && (
-				<div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-4 border border-slate-200 dark:border-slate-800">
-					<div className="flex items-center gap-2 mb-3 text-slate-600 dark:text-slate-400">
-						<Briefcase className="w-4 h-4" />
-						<span className="text-xs font-semibold uppercase tracking-wider">
-							Procedural Steps (Police/Court)
-						</span>
+				<Collapsible
+					open={isProceduralOpen}
+					onOpenChange={setIsProceduralOpen}
+					className="bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-800"
+				>
+					<div className="p-4 flex items-center justify-between">
+						<div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+							<Briefcase className="w-4 h-4" />
+							<span className="text-xs font-semibold uppercase tracking-wider">
+								Procedural Steps (Police/Court)
+							</span>
+						</div>
+						<CollapsibleTrigger asChild>
+							<Button
+								variant="ghost"
+								size="sm"
+								className="p-0 h-6 w-6 hover:bg-slate-200/50 dark:hover:bg-slate-800"
+							>
+								<ChevronDown
+									className={cn(
+										"h-4 w-4 transition-transform duration-200",
+										isProceduralOpen ? "rotate-180" : "",
+									)}
+								/>
+								<span className="sr-only">
+									Toggle procedural steps
+								</span>
+							</Button>
+						</CollapsibleTrigger>
 					</div>
-					<div className="relative border-l-2 border-slate-200 dark:border-slate-800 pl-4 ml-2 space-y-4">
-						{proceduralSteps.map((item, idx) => (
-							<TimelineItemRow
-								key={`proc-${idx}`}
-								item={item}
-								variant="procedural"
-							/>
-						))}
-					</div>
-				</div>
+
+					<CollapsibleContent>
+						<div className="p-4 pt-0">
+							<div className="relative border-l-2 border-slate-200 dark:border-slate-800 pl-4 ml-2 space-y-4">
+								{proceduralSteps.map((item, idx) => (
+									<TimelineItemRow
+										key={`proc-${idx}`}
+										item={item}
+										variant="procedural"
+									/>
+								))}
+							</div>
+						</div>
+					</CollapsibleContent>
+				</Collapsible>
 			)}
 
 			{/* Confidence Messaging Warning */}

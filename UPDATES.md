@@ -1,9 +1,15 @@
-Frontend: timeline confidence messaging (optional polish)
+Step 2: Clarification UX activation
 
-When confidence === medium | low:
+Backend already supports:
 
-Add a small note near timelines:
+"clarification_needed": { ... }
 
-“Some procedural steps may vary by facts or jurisdiction.”
+Next:
 
-This keeps you legally safe without cluttering normal cases.
+Disable input
+
+Force user choice
+
+Auto-resend query
+
+You already scaffolded this — just wire it fully.

@@ -129,6 +129,20 @@ export function ChatMessage({ message, onOptionSelect }: ChatMessageProps) {
 							: "bg-white dark:bg-zinc-900 border",
 					)}
 				>
+					{message.system_notice && (
+						<Alert className="mb-4 bg-yellow-50 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-900/50">
+							<AlertTitle className="text-yellow-800 dark:text-yellow-500 font-semibold text-xs flex items-center gap-2">
+								<ShieldAlert className="h-4 w-4" />
+								{message.system_notice.level === "warning"
+									? "Notice"
+									: "Info"}
+							</AlertTitle>
+							<AlertDescription className="text-yellow-700 dark:text-yellow-400/90 text-xs mt-1">
+								{message.system_notice.message}
+							</AlertDescription>
+						</Alert>
+					)}
+
 					{!isUser && (
 						<Button
 							variant="ghost"

@@ -21,6 +21,13 @@ import {
 	CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 interface TimelineProps {
 	items: TimelineItem[];
 	confidence?: "high" | "medium" | "low";
@@ -128,9 +135,25 @@ export function Timeline({ items, confidence }: TimelineProps) {
 					<div className="p-4 flex items-center justify-between">
 						<div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
 							<Briefcase className="w-4 h-4" />
-							<span className="text-xs font-semibold uppercase tracking-wider">
-								Procedural Steps (Police/Court)
-							</span>
+							<TooltipProvider>
+								<Tooltip delayDuration={300}>
+									<TooltipTrigger asChild>
+										<span className="text-xs font-semibold uppercase tracking-wider border-b border-dotted border-slate-400 cursor-help">
+											Procedural Steps (Police/Court)
+										</span>
+									</TooltipTrigger>
+									<TooltipContent
+										side="right"
+										className="max-w-[220px] text-xs"
+									>
+										<p>
+											Procedural steps are handled by
+											authorities, not actions required
+											from you.
+										</p>
+									</TooltipContent>
+								</Tooltip>
+							</TooltipProvider>
 						</div>
 						<CollapsibleTrigger asChild>
 							<Button

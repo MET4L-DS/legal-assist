@@ -54,6 +54,7 @@ export function ChatContainer() {
 				timeline: response.timeline,
 				clarification_needed: response.clarification_needed,
 				confidence: response.confidence,
+				system_notice: response.system_notice,
 				timestamp: Date.now(),
 			};
 

@@ -44,5 +44,6 @@ export async function queryRAG(request: RAGRequest): Promise<RAGResponse> {
 				}
 			: null,
 		confidence: data.confidence || "high",
+		system_notice: data.system_notice || null,
 	};
 }

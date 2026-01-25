@@ -26,6 +26,10 @@ export type RAGResponse = {
 		question: string;
 	} | null;
 	confidence?: "high" | "medium" | "low";
+	system_notice?: {
+		level: "warning" | "info";
+		message: string;
+	} | null;
 };
 
 export type RAGContext = {
@@ -49,5 +53,6 @@ export type Message = {
 	timeline?: TimelineItem[];
 	clarification_needed?: RAGResponse["clarification_needed"];
 	confidence?: RAGResponse["confidence"];
+	system_notice?: RAGResponse["system_notice"];
 	timestamp: number;
 };

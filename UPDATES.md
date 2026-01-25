@@ -1,15 +1,11 @@
-Step 2: Clarification UX activation
+Step 3: Trust signals
 
-Backend already supports:
+Add subtle but powerful signals:
 
-"clarification_needed": { ... }
+“Verified from Government SOPs”
 
-Next:
+“Last updated: 2023 laws”
 
-Disable input
+Confidence badge tooltip
 
-Force user choice
-
-Auto-resend query
-
-You already scaffolded this — just wire it fully.
+This matters more than animations.

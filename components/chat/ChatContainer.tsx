@@ -112,11 +112,18 @@ export function ChatContainer() {
 
 	return (
 		<Card className="flex flex-col h-[85vh] min-h-[500px] w-full max-w-4xl mx-auto shadow-xl">
-			<div className="p-4 border-b bg-muted/50">
-				<h2 className="text-lg font-semibold">Legal Assistant</h2>
-				<p className="text-xs text-muted-foreground">
-					AI-powered legal guidance (Indian Law)
-				</p>
+			<div className="p-4 border-b bg-muted/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+				<div>
+					<h2 className="text-lg font-semibold flex items-center gap-2">
+						Legal Assistant
+						<span className="text-[10px] font-normal bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-1.5 py-0.5 rounded-full border border-green-200 dark:border-green-800">
+							Verified from Government SOPs
+						</span>
+					</h2>
+					<p className="text-xs text-muted-foreground mt-1">
+						AI-powered legal guidance (Indian Law) • Last updated: 2023 laws
+					</p>
+				</div>
 			</div>
 
 			<ScrollArea className="flex-1 p-4">

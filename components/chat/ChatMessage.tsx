@@ -6,12 +6,18 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { BookOpen, Clock, Copy } from "lucide-react";
+import { BookOpen, Clock, Copy, ShieldCheck, ShieldAlert, ShieldQuestion } from "lucide-react";
 import { ClarificationPrompt } from "./ClarificationPrompt";
 import { Timeline } from "./Timeline";
 import ReactMarkdown from "react-markdown";
 import { useState } from "react";
 import { Button } from "../ui/button";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ChatMessageProps {
 	message: Message;
@@ -48,9 +54,38 @@ const getTierInfo = (tier: string) => {
 	}
 };
 
+const getConfidenceInfo = (confidence?: string) => {
+	switch (confidence) {
+		case "high":
+			return {
+				label: "High Confidence",
+				icon: ShieldCheck,
+				color: "text-green-600 dark:text-green-400",
+				desc: "Verified against explicit SOPs/BNS sections.",
+			};
+		case "medium":
+			return {
+				label: "Medium Confidence",
+				icon: ShieldAlert,
+				color: "text-amber-600 dark:text-amber-400",
+				desc: "Based on general legal principles; specifics may vary.",
+			};
+		case "low":
+			return {
+				label: "Low Confidence",
+				icon: ShieldQuestion,
+				color: "text-red-600 dark:text-red-400",
+				desc: "Requires further verification. Consult a lawyer.",
+			};
+		default:
+			return null;
+	}
+};
+
 export function ChatMessage({ message, onOptionSelect }: ChatMessageProps) {
 	const isUser = message.role === "user";
 	const tierInfo = message.tier ? getTierInfo(message.tier) : null;
+	const confidenceInfo = !isUser ? getConfidenceInfo(message.confidence) : null;
 	const [copied, setCopied] = useState(false);
 
 	const handleCopy = () => {
@@ -100,10 +135,40 @@ export function ChatMessage({ message, onOptionSelect }: ChatMessageProps) {
 						</Button>
 					)}
 
-					{tierInfo && !isUser && (
-						<Badge variant={tierInfo.variant} className="mb-2">
-							{tierInfo.label}
-						</Badge>
+					{!isUser && (
+						<div className="flex items-center gap-3 mb-2 flex-wrap">
+							{tierInfo && (
+								<Badge variant={tierInfo.variant}>
+									{tierInfo.label}
+								</Badge>
+							)}
+
+							{confidenceInfo && (
+								<TooltipProvider>
+									<Tooltip delayDuration={300}>
+										<TooltipTrigger asChild>
+											<div
+												className={cn(
+													"flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider cursor-help opacity-90 hover:opacity-100 transition-opacity",
+													confidenceInfo.color,
+												)}
+											>
+												<confidenceInfo.icon className="w-3 h-3" />
+												<span>
+													{confidenceInfo.label}
+												</span>
+											</div>
+										</TooltipTrigger>
+										<TooltipContent
+											side="right"
+											className="max-w-[200px] text-xs"
+										>
+											<p>{confidenceInfo.desc}</p>
+										</TooltipContent>
+									</Tooltip>
+								</TooltipProvider>
+							)}
+						</div>
 					)}
 
 					{!isUser &&

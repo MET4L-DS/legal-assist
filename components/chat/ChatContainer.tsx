@@ -121,7 +121,8 @@ export function ChatContainer() {
 						</span>
 					</h2>
 					<p className="text-xs text-muted-foreground mt-1">
-						AI-powered legal guidance (Indian Law) • Last updated: 2023 laws
+						AI-powered legal guidance (Indian Law) • Last updated:
+						2023 laws
 					</p>
 				</div>
 			</div>

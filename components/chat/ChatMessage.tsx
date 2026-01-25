@@ -6,7 +6,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { BookOpen, Clock, Copy, ShieldCheck, ShieldAlert, ShieldQuestion } from "lucide-react";
+import {
+	BookOpen,
+	Clock,
+	Copy,
+	ShieldCheck,
+	ShieldAlert,
+	ShieldQuestion,
+} from "lucide-react";
 import { ClarificationPrompt } from "./ClarificationPrompt";
 import { Timeline } from "./Timeline";
 import ReactMarkdown from "react-markdown";
@@ -85,7 +92,9 @@ const getConfidenceInfo = (confidence?: string) => {
 export function ChatMessage({ message, onOptionSelect }: ChatMessageProps) {
 	const isUser = message.role === "user";
 	const tierInfo = message.tier ? getTierInfo(message.tier) : null;
-	const confidenceInfo = !isUser ? getConfidenceInfo(message.confidence) : null;
+	const confidenceInfo = !isUser
+		? getConfidenceInfo(message.confidence)
+		: null;
 	const [copied, setCopied] = useState(false);
 
 	const handleCopy = () => {

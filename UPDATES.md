@@ -1,11 +1,30 @@
-Step 3: Trust signals
+NEXT STEP — Frontend Polish (Low risk, high value)
 
-Add subtle but powerful signals:
+Your frontend is already good. Now make it feel authoritative.
 
-“Verified from Government SOPs”
+1. Timeline UX (small tweaks)
 
-“Last updated: 2023 laws”
+Keep Critical Actions (You) always visible on mobile
 
-Confidence badge tooltip
+Make Procedural Steps (Police/Court) collapsible
 
-This matters more than animations.
+Add tooltip:
+
+“Procedural steps are handled by authorities, not actions required from you.”
+
+This prevents user anxiety.
+
+2. Confidence & Notice UI
+
+When backend sends:
+
+confidence: "low"
+system_notice: { ... }
+
+Frontend should:
+
+Show a yellow warning banner
+
+Never hide timelines, just contextualize them
+
+This matches your backend safety philosophy.

@@ -15,7 +15,7 @@ export function ClarificationPrompt({
 		<Card className="w-full border-blue-200 bg-blue-50 dark:bg-blue-950/20 dark:border-blue-800">
 			<CardHeader className="pb-2">
 				<CardTitle className="text-sm font-medium text-blue-800 dark:text-blue-300">
-					{data.reason}
+					{data.question}
 				</CardTitle>
 			</CardHeader>
 			<CardContent className="flex flex-wrap gap-2 pt-2">

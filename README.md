@@ -34,6 +34,13 @@ A Next.js frontend for the Tiered Legal Retrieval-Augmented Generation (RAG) sys
 - **Auto-Scrolling**: Smart scrolling behavior to keep the latest message in view.
 - **Accessibility**: Aria labels and keyboard navigation support via Radix UI primitives.
 
+### Phase 5: Trust & Safety UI (✅ Completed)
+
+- **Strict Type Alignment**: Frontend types now strictly enforce the backend contract, specifically handling the nested `tier_info` structure via an adapter pattern.
+- **Enhanced Clarification Mode**: The chat input is strictly disabled when the AI requests clarification, preventing linear conversation breakage and ensuring users resolve ambiguity.
+- **Critical Timeline Visualization**: A dedicated `Timeline` component automatically detects and parses time-sensitive phrases (e.g., "within 24 hours") from the AI response, displaying them in a high-visibility, dot-pattern vertical timeline.
+- **Trust Signals**: Permanent disclaimers regarding legal advice and "Copy" functionality for easy reference.
+
 ## 🛠️ Technology Stack
 
 - **Framework**: Next.js 16 (App Router)
@@ -85,7 +92,8 @@ components/
 │   ├── ChatContainer.tsx    # Main logic & state
 │   ├── ChatMessage.tsx      # Message rendering (Markdown + Tiers)
 │   ├── ChatInput.tsx        # User input
-│   └── ClarificationPrompt.tsx # Disambiguation UI
+│   ├── ClarificationPrompt.tsx # Disambiguation UI
+│   └── Timeline.tsx         # Visual component for critical deadlines
 └── ui/                      # Shared Shadcn components
 
 lib/

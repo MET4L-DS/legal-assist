@@ -102,6 +102,12 @@ export function ChatContainer() {
 		handleSend(option, nextContext);
 	};
 
+	const lastMessage = messages[messages.length - 1];
+	const isClarificationPending =
+		!loading &&
+		!!lastMessage?.clarification_needed &&
+		lastMessage.role === "assistant";
+
 	return (
 		<Card className="flex flex-col h-[85vh] min-h-[500px] w-full max-w-4xl mx-auto shadow-xl">
 			<div className="p-4 border-b bg-muted/50">
@@ -140,7 +146,17 @@ export function ChatContainer() {
 				</div>
 			</ScrollArea>
 
-			<ChatInput onSend={(text) => handleSend(text)} disabled={loading} />
+			<div className="p-4 border-t bg-background flex flex-col gap-2">
+				<ChatInput
+					onSend={(text) => handleSend(text)}
+					disabled={loading || isClarificationPending}
+				/>
+				<p className="text-[10px] text-center text-muted-foreground">
+					Information provided is for guidance only and does not
+					constitute legal advice. Consult a lawyer for specific
+					cases.
+				</p>
+			</div>
 		</Card>
 	);
 }

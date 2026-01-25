@@ -33,7 +33,14 @@ export async function queryRAG(request: RAGRequest): Promise<RAGResponse> {
 		case_type: data.tier_info?.case_type || null,
 		stage: data.tier_info?.detected_stages?.[0] || null,
 		citations: data.citations || [],
-		clarification_needed: data.clarification_needed || null,
-		confidence: "high", // Default, as backend doesn't currently return this
+		clarification_needed: data.clarification_needed
+			? {
+					...data.clarification_needed,
+					question:
+						data.clarification_needed.question ||
+						data.clarification_needed.reason ||
+						"Please select an option to proceed:",
+				}
+			: null,
 	};
 }

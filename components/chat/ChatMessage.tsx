@@ -1,11 +1,18 @@
+"use client";
+
 import { Message } from "@/lib/types/rag";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { BookOpen, Clock, Copy } from "lucide-react";
 import { ClarificationPrompt } from "./ClarificationPrompt";
+import { Timeline, TimelineItem } from "./Timeline";
 import ReactMarkdown from "react-markdown";
+import { useState } from "react";
+import { Button } from "../ui/button";
+
 interface ChatMessageProps {
 	message: Message;
 	onOptionSelect?: (option: string, type: string) => void;
@@ -41,9 +48,54 @@ const getTierInfo = (tier: string) => {
 	}
 };
 
+const extractTimeSensitiveInfo = (content: string): TimelineItem[] => {
+	const sentences = content.split(/(?<=[.!?])\s+/);
+	const urgentPatterns = [
+		{ regex: /within (\d+\s+(?:hours|days|minutes))/i },
+		{ regex: /(\d+\s+(?:hours|days|minutes))/i },
+		{ regex: /(immediately)/i },
+		{ regex: /(without delay)/i },
+		{ regex: /(urgent)/i },
+	];
+
+	const results: TimelineItem[] = [];
+
+	sentences.forEach((sentence) => {
+		for (const pattern of urgentPatterns) {
+			const match = sentence.match(pattern.regex);
+			if (match) {
+				const time = match[1];
+				const description = sentence.replace(/\*\*/g, "").trim();
+
+				// Avoid duplicates if needed, typically basic check
+				if (!results.some((r) => r.description === description)) {
+					results.push({
+						time: time,
+						description: description,
+					});
+				}
+				break;
+			}
+		}
+	});
+
+	return results.slice(0, 3);
+};
+
 export function ChatMessage({ message, onOptionSelect }: ChatMessageProps) {
 	const isUser = message.role === "user";
 	const tierInfo = message.tier ? getTierInfo(message.tier) : null;
+	const urgentInfo =
+		!isUser && message.content
+			? extractTimeSensitiveInfo(message.content)
+			: [];
+	const [copied, setCopied] = useState(false);
+
+	const handleCopy = () => {
+		navigator.clipboard.writeText(message.content);
+		setCopied(true);
+		setTimeout(() => setCopied(false), 2000);
+	};
 
 	return (
 		<div
@@ -65,17 +117,34 @@ export function ChatMessage({ message, onOptionSelect }: ChatMessageProps) {
 			>
 				<div
 					className={cn(
-						"rounded-lg px-4 py-3 text-sm shadow-sm",
+						"rounded-lg px-4 py-3 text-sm shadow-sm relative group",
 						isUser
 							? "bg-primary text-primary-foreground"
 							: "bg-white dark:bg-zinc-900 border",
 					)}
 				>
+					{!isUser && (
+						<Button
+							variant="ghost"
+							size="icon"
+							className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+							onClick={handleCopy}
+						>
+							{copied ? (
+								<span className="text-[10px]">Copied</span>
+							) : (
+								<Copy className="h-3 w-3" />
+							)}
+						</Button>
+					)}
+
 					{tierInfo && !isUser && (
 						<Badge variant={tierInfo.variant} className="mb-2">
 							{tierInfo.label}
 						</Badge>
 					)}
+
+					{urgentInfo.length > 0 && <Timeline items={urgentInfo} />}
 
 					<div
 						className={cn(

@@ -12,9 +12,8 @@ export type RAGResponse = {
 	clarification_needed?: {
 		type: string;
 		options: string[];
-		reason: string;
+		question: string;
 	} | null;
-	confidence: "high" | "medium" | "low";
 };
 
 export type RAGContext = {

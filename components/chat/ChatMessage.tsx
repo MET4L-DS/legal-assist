@@ -1,6 +1,6 @@
 "use client";
 
-import { Message } from "@/lib/types/rag";
+import { Message, StructuredCitation } from "@/lib/types/rag";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +25,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { SourceViewer } from "./SourceViewer";
 
 interface ChatMessageProps {
 	message: Message;
@@ -96,6 +97,8 @@ export function ChatMessage({ message, onOptionSelect }: ChatMessageProps) {
 		? getConfidenceInfo(message.confidence)
 		: null;
 	const [copied, setCopied] = useState(false);
+	const [selectedCitation, setSelectedCitation] =
+		useState<StructuredCitation | null>(null);
 
 	const handleCopy = () => {
 		navigator.clipboard.writeText(message.content);
@@ -121,6 +124,13 @@ export function ChatMessage({ message, onOptionSelect }: ChatMessageProps) {
 					isUser ? "items-end" : "items-start",
 				)}
 			>
+				{/* Source Viewer Modal */}
+				<SourceViewer
+					isOpen={!!selectedCitation}
+					onClose={() => setSelectedCitation(null)}
+					citation={selectedCitation}
+				/>
+
 				<div
 					className={cn(
 						"rounded-lg px-4 py-3 text-sm shadow-sm relative group",
@@ -245,13 +255,31 @@ export function ChatMessage({ message, onOptionSelect }: ChatMessageProps) {
 								</CardTitle>
 							</CardHeader>
 							<CardContent className="py-2 px-4 pb-3">
-								<ul className="list-disc pl-4 space-y-1">
+								<ul className="pl-4 space-y-2">
 									{message.citations.map((citation, idx) => (
 										<li
 											key={idx}
-											className="text-xs text-muted-foreground"
+											className="text-xs text-muted-foreground list-none"
 										>
-											{citation}
+											<button
+												onClick={() =>
+													setSelectedCitation(
+														citation,
+													)
+												}
+												className="inline-flex items-center gap-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 px-2 py-1 rounded transition-colors text-left border border-transparent hover:border-slate-200 dark:hover:border-slate-700 w-full"
+											>
+												<BookOpen className="h-3 w-3 shrink-0 text-primary/70" />
+												<span className="truncate">
+													{citation.display}
+												</span>
+												<Badge
+													variant="secondary"
+													className="ml-auto text-[10px] h-5 px-1 font-normal bg-slate-100 hover:bg-white"
+												>
+													View Source
+												</Badge>
+											</button>
 										</li>
 									))}
 								</ul>

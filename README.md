@@ -41,6 +41,7 @@ A Next.js frontend for the Tiered Legal Retrieval-Augmented Generation (RAG) sys
 - **Critical Timeline Visualization**: Displays a dedicated `Timeline` component populated by **structured backend data** (not regex parsing). It distinguishes "Critical User Actions" (Red) vs. "Procedural Steps" (Gray) and features **contextual tooltips**, **collapsible sections**, **sticky headers** for mobile, and a **"Copy as Checklist"** tool.
 - **Trust Signals**: Includes "Verified from Government SOPs" status, "Last updated: 2023 laws" metadata, and dynamic **Confidence Badges** (Shield icons).
 - **Safety Notices**: Prominent yellow warning banners appear when backend confidence is low, ensuring users are alerted to potential variability in legal procedures.
+- **Source Transparency**: Frontend now supports "View Source" functionality. Clicking any citation fetches and displays the **verbatim legal text** (Section/SOP) directly from the backend, ensuring users can verify AI explanations against primary sources.
 
 ## 🛠️ Technology Stack
 

@@ -112,8 +112,8 @@ export function ChatContainer() {
 		lastMessage.role === "assistant";
 
 	return (
-		<Card className="flex flex-col h-[85vh] min-h-[500px] w-full max-w-4xl mx-auto shadow-xl">
-			<div className="p-4 border-b bg-muted/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+		<Card className="flex flex-col h-[92vh] w-full max-w-6xl mx-auto shadow-2xl border-slate-200 dark:border-slate-800">
+			<div className="p-4 border-b bg-white dark:bg-slate-950 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
 				<div>
 					<h2 className="text-lg font-semibold flex items-center gap-2">
 						Legal Assistant

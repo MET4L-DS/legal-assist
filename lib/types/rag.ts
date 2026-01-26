@@ -1,3 +1,20 @@
+export type SourceType =
+	| "general_sop"
+	| "sop"
+	| "bnss"
+	| "bns"
+	| "bsa"
+	| "evidence"
+	| "compensation";
+
+export interface StructuredCitation {
+	source_type: SourceType;
+	source_id: string;
+	display: string;
+	context_snippet?: string;
+	relevance_score?: number;
+}
+
 export type TimelineItem = {
 	stage: string;
 	action: string;
@@ -18,7 +35,7 @@ export type RAGResponse = {
 		| "standard";
 	case_type: string | null;
 	stage: string | null;
-	citations: string[];
+	citations: StructuredCitation[];
 	timeline: TimelineItem[];
 	clarification_needed?: {
 		type: string;
@@ -49,10 +66,33 @@ export type Message = {
 	role: "user" | "assistant";
 	content: string;
 	tier?: RAGResponse["tier"];
-	citations?: string[];
+	citations?: StructuredCitation[];
 	timeline?: TimelineItem[];
 	clarification_needed?: RAGResponse["clarification_needed"];
 	confidence?: RAGResponse["confidence"];
 	system_notice?: RAGResponse["system_notice"];
 	timestamp: number;
+};
+
+export type SourceRequest = {
+	source_type: SourceType;
+	source_id: string;
+};
+
+export type SourceResponse = {
+	source_type: string;
+	doc_id?: string;
+	title: string;
+	section_id: string | null;
+	content: string;
+	legal_references: string[];
+	last_updated?: string;
+	metadata?: {
+		procedural_stage?: string;
+		stakeholders?: string[];
+		action_type?: string;
+		time_limit?: string;
+		sop_group?: string;
+		priority?: number;
+	};
 };

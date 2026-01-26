@@ -25,6 +25,16 @@ export type TimelineItem = {
 	audience?: "victim" | "police" | "court";
 };
 
+export interface AnswerSentence {
+	sid: string;
+	text: string;
+}
+
+export interface SentenceCitations {
+	sentences: AnswerSentence[];
+	mapping: Record<string, string[]>; // sid -> ["source_type:source_id", ...]
+}
+
 export type RAGResponse = {
 	answer: string;
 	tier:
@@ -36,6 +46,7 @@ export type RAGResponse = {
 	case_type: string | null;
 	stage: string | null;
 	citations: StructuredCitation[];
+	sentence_citations?: SentenceCitations;
 	timeline: TimelineItem[];
 	clarification_needed?: {
 		type: string;
@@ -67,6 +78,7 @@ export type Message = {
 	content: string;
 	tier?: RAGResponse["tier"];
 	citations?: StructuredCitation[];
+	sentence_citations?: SentenceCitations;
 	timeline?: TimelineItem[];
 	clarification_needed?: RAGResponse["clarification_needed"];
 	confidence?: RAGResponse["confidence"];
@@ -74,9 +86,16 @@ export type Message = {
 	timestamp: number;
 };
 
+export interface HighlightRange {
+	start: number;
+	end: number;
+	reason: string;
+}
+
 export type SourceRequest = {
 	source_type: SourceType;
 	source_id: string;
+	highlight_snippet?: string;
 };
 
 export type SourceResponse = {
@@ -87,6 +106,7 @@ export type SourceResponse = {
 	content: string;
 	legal_references: string[];
 	last_updated?: string;
+	highlights?: HighlightRange[];
 	metadata?: {
 		procedural_stage?: string;
 		stakeholders?: string[];

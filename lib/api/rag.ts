@@ -38,6 +38,7 @@ export async function queryRAG(request: RAGRequest): Promise<RAGResponse> {
 		case_type: data.tier_info?.case_type || null,
 		stage: data.tier_info?.detected_stages?.[0] || null,
 		citations: data.citations || [],
+		sentence_citations: data.sentence_citations || null,
 		timeline: data.timeline || [],
 		clarification_needed: data.clarification_needed
 			? {

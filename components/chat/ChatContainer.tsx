@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Message, RAGContext } from "@/lib/types/rag";
-import { queryRAG } from "@/lib/api/rag";
+import { Message, RAGContext, StructuredCitation } from "@/lib/types/rag";
+import { queryRAG, fetchSource } from "@/lib/api/rag";
 import { ChatMessage } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
+import { SourceSidePanel, CachedSource } from "./SourceSidePanel";
 
 export function ChatContainer() {
 	const [messages, setMessages] = useState<Message[]>([]);
@@ -15,6 +16,14 @@ export function ChatContainer() {
 		last_case_type: null,
 		last_stage: null,
 	});
+
+	// Source Panel State
+	const [sourcePanelOpen, setSourcePanelOpen] = useState(false);
+	const [sourceCache, setSourceCache] = useState<
+		Record<string, CachedSource>
+	>({});
+	const [activeSourceKey, setActiveSourceKey] = useState<string | null>(null);
+	const [sourceLoading, setSourceLoading] = useState(false);
 
 	const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -51,6 +60,7 @@ export function ChatContainer() {
 				content: response.answer,
 				tier: response.tier,
 				citations: response.citations,
+				sentence_citations: response.sentence_citations,
 				timeline: response.timeline,
 				clarification_needed: response.clarification_needed,
 				confidence: response.confidence,
@@ -105,6 +115,42 @@ export function ChatContainer() {
 		handleSend(option, nextContext);
 	};
 
+	const handleCitationClick = async (citation: StructuredCitation) => {
+		const key = `${citation.source_type}:${citation.source_id}`;
+
+		// Open panel immediately
+		setSourcePanelOpen(true);
+		setActiveSourceKey(key);
+
+		// Check cache
+		if (sourceCache[key]) {
+			return;
+		}
+
+		// Fetch if not cached
+		setSourceLoading(true);
+		try {
+			const data = await fetchSource({
+				source_type: citation.source_type,
+				source_id: citation.source_id,
+				highlight_snippet: citation.context_snippet,
+			});
+
+			setSourceCache((prev) => ({
+				...prev,
+				[key]: {
+					...data,
+					fetched_at: Date.now(),
+					key,
+				},
+			}));
+		} catch (error) {
+			console.error("Failed to fetch source:", error);
+		} finally {
+			setSourceLoading(false);
+		}
+	};
+
 	const lastMessage = messages[messages.length - 1];
 	const isClarificationPending =
 		!loading &&
@@ -112,7 +158,15 @@ export function ChatContainer() {
 		lastMessage.role === "assistant";
 
 	return (
-		<Card className="flex flex-col h-[92vh] w-full max-w-6xl mx-auto shadow-2xl border-slate-200 dark:border-slate-800">
+		<Card className="flex flex-col h-[92vh] w-full max-w-6xl mx-auto shadow-2xl border-slate-200 dark:border-slate-800 relative overflow-hidden">
+			<SourceSidePanel
+				isOpen={sourcePanelOpen}
+				onClose={() => setSourcePanelOpen(false)}
+				sources={sourceCache}
+				activeSourceKey={activeSourceKey}
+				onSourceSelect={setActiveSourceKey}
+				isLoading={sourceLoading}
+			/>
 			<div className="p-4 border-b bg-white dark:bg-slate-950 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
 				<div>
 					<h2 className="text-lg font-semibold flex items-center gap-2">
@@ -145,6 +199,7 @@ export function ChatContainer() {
 							key={msg.id}
 							message={msg}
 							onOptionSelect={handleOptionSelect}
+							onCitationClick={handleCitationClick}
 						/>
 					))}
 

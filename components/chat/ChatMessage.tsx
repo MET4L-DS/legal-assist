@@ -1,6 +1,10 @@
 "use client";
 
-import { Message, StructuredCitation } from "@/lib/types/rag";
+import {
+	Message,
+	StructuredCitation,
+	SentenceCitations,
+} from "@/lib/types/rag";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -25,11 +29,11 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { SourceViewer } from "./SourceViewer";
 
 interface ChatMessageProps {
 	message: Message;
 	onOptionSelect?: (option: string, type: string) => void;
+	onCitationClick?: (citation: StructuredCitation) => void;
 }
 
 const getTierInfo = (tier: string) => {
@@ -90,15 +94,17 @@ const getConfidenceInfo = (confidence?: string) => {
 	}
 };
 
-export function ChatMessage({ message, onOptionSelect }: ChatMessageProps) {
+export function ChatMessage({
+	message,
+	onOptionSelect,
+	onCitationClick,
+}: ChatMessageProps) {
 	const isUser = message.role === "user";
 	const tierInfo = message.tier ? getTierInfo(message.tier) : null;
 	const confidenceInfo = !isUser
 		? getConfidenceInfo(message.confidence)
 		: null;
 	const [copied, setCopied] = useState(false);
-	const [selectedCitation, setSelectedCitation] =
-		useState<StructuredCitation | null>(null);
 
 	const handleCopy = () => {
 		navigator.clipboard.writeText(message.content);
@@ -124,13 +130,6 @@ export function ChatMessage({ message, onOptionSelect }: ChatMessageProps) {
 					isUser ? "items-end" : "items-start",
 				)}
 			>
-				{/* Source Viewer Modal */}
-				<SourceViewer
-					isOpen={!!selectedCitation}
-					onClose={() => setSelectedCitation(null)}
-					citation={selectedCitation}
-				/>
-
 				<div
 					className={cn(
 						"rounded-lg px-4 py-3 text-sm shadow-sm relative group",
@@ -224,6 +223,72 @@ export function ChatMessage({ message, onOptionSelect }: ChatMessageProps) {
 							<div className="whitespace-pre-wrap">
 								{message.content}
 							</div>
+						) : message.sentence_citations ? (
+							<div>
+								{message.sentence_citations.sentences.map(
+									(sent) => {
+										const citationKeys =
+											message.sentence_citations!.mapping[
+												sent.sid
+											] || [];
+										const hasCitations =
+											citationKeys.length > 0;
+
+										return (
+											<span
+												key={sent.sid}
+												className={cn(
+													"mr-1 inline transition-colors duration-200 rounded px-0.5 -mx-0.5 box-decoration-clone",
+													hasCitations
+														? "cursor-pointer hover:bg-zinc-200/50 dark:hover:bg-zinc-800/50 hover:text-blue-600 dark:hover:text-blue-400"
+														: "",
+												)}
+												onClick={() => {
+													if (
+														hasCitations &&
+														onCitationClick &&
+														message.citations
+													) {
+														const [type, id] =
+															citationKeys[0].split(
+																":",
+															);
+														const citation =
+															message.citations.find(
+																(c) =>
+																	c.source_type ===
+																		type &&
+																	c.source_id ===
+																		id,
+															);
+														if (citation)
+															onCitationClick(
+																citation,
+															);
+													}
+												}}
+												title={
+													hasCitations
+														? "Click to view source"
+														: undefined
+												}
+											>
+												<ReactMarkdown
+													components={{
+														p: ({ children }) => (
+															<span className="inline">
+																{children}
+															</span>
+														),
+													}}
+												>
+													{sent.text}
+												</ReactMarkdown>
+											</span>
+										);
+									},
+								)}
+							</div>
 						) : (
 							<ReactMarkdown>{message.content}</ReactMarkdown>
 						)}
@@ -263,9 +328,7 @@ export function ChatMessage({ message, onOptionSelect }: ChatMessageProps) {
 										>
 											<button
 												onClick={() =>
-													setSelectedCitation(
-														citation,
-													)
+													onCitationClick?.(citation)
 												}
 												className="inline-flex items-center gap-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 px-2 py-1 rounded transition-colors text-left border border-transparent hover:border-slate-200 dark:hover:border-slate-700 w-full"
 											>

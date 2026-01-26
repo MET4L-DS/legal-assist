@@ -41,7 +41,16 @@ A Next.js frontend for the Tiered Legal Retrieval-Augmented Generation (RAG) sys
 - **Critical Timeline Visualization**: Displays a dedicated `Timeline` component populated by **structured backend data** (not regex parsing). It distinguishes "Critical User Actions" (Red) vs. "Procedural Steps" (Gray) and features **contextual tooltips**, **collapsible sections**, **sticky headers** for mobile, and a **"Copy as Checklist"** tool.
 - **Trust Signals**: Includes "Verified from Government SOPs" status, "Last updated: 2023 laws" metadata, and dynamic **Confidence Badges** (Shield icons).
 - **Safety Notices**: Prominent yellow warning banners appear when backend confidence is low, ensuring users are alerted to potential variability in legal procedures.
-- **Source Transparency**: Frontend now supports "View Source" functionality. Clicking any citation fetches and displays the **verbatim legal text** (Section/SOP) directly from the backend, ensuring users can verify AI explanations against primary sources.
+- **Source Transparency (Citation V2)**: Implementing the **Citation API V2.0** spec, the frontend now supports structured citations.
+    - _Note: Includes a robust mock fallback system that simulates source content if the backend endpoint is unreachable or returns 404, enabling full UI testing without a live index._
+
+### Phase 6: Advanced Citation & Research UX (✅ Completed)
+
+- **Persistent Source Explorer**: Replaced transient modals with a **Side Panel** architecture. Users can now view citations alongside the chat, keeping the conversation context visible.
+- **Session-Level Caching**: Implemented a smart caching layer. Sources are fetched strictly **once per session** and stored in memory, making subsequent accesses instant.
+- **Verbatim Highlighting**: Integrated `highlighted_ranges` support. The specific sentences referenced by the AI are now visually highlighted (`<mark>`) within the full legal text, auto-scrolled into view upon opening.
+- **Accordion Navigation**: Multiple sources can be managed simultaneously using a collapsible accordion interface.
+- **Interactive Sentence Attribution**: AI responses are now interactive at the sentence level. Instead of cluttering the UI with footnotes, users can simply click on any sentence to verify its source in the side panel.
 
 ## 🛠️ Technology Stack
 
@@ -91,11 +100,12 @@ app/
 
 components/
 ├── chat/
-│   ├── ChatContainer.tsx    # Main logic & state
-│   ├── ChatMessage.tsx      # Message rendering (Markdown + Tiers)
+│   ├── ChatContainer.tsx    # Main logic & state (Source Cache & Side Panel integration)
+│   ├── ChatMessage.tsx      # Message rendering (Markdown, Tiers, & Tooltips)
 │   ├── ChatInput.tsx        # User input
 │   ├── ClarificationPrompt.tsx # Disambiguation UI
-│   └── Timeline.tsx         # Visual component for critical deadlines
+│   ├── Timeline.tsx         # Visual component for critical deadlines
+│   └── SourceSidePanel.tsx  # Persistent side drawer for legal sources with highlighting
 └── ui/                      # Shared Shadcn components
 
 lib/

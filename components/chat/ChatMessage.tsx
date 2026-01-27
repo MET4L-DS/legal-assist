@@ -4,6 +4,8 @@ import {
 	Message,
 	StructuredCitation,
 	SentenceCitations,
+	AnswerUnit,
+	SourceSpan,
 } from "@/lib/types/rag";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -30,10 +32,26 @@ import {
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+// Helper to map doc_id to source_type (approximate, should be robust)
+const mapDocIdToSourceType = (doc_id: string): string => {
+	const lower = doc_id.toLowerCase();
+	if (lower.includes("general_sop")) return "general_sop";
+	if (lower.includes("sop")) return "sop";
+	if (lower.includes("bnss")) return "bnss";
+	if (lower.includes("bns")) return "bns";
+	if (lower.includes("bsa")) return "bsa";
+	if (lower.includes("evidence")) return "evidence";
+	if (lower.includes("compensation")) return "compensation";
+	return "known";
+};
+
 interface ChatMessageProps {
 	message: Message;
 	onOptionSelect?: (option: string, type: string) => void;
-	onCitationClick?: (citation: StructuredCitation) => void;
+	onCitationClick?: (
+		citation: StructuredCitation,
+		highlightSpan?: SourceSpan,
+	) => void;
 }
 
 const getTierInfo = (tier: string) => {
@@ -222,6 +240,81 @@ export function ChatMessage({
 						{isUser ? (
 							<div className="whitespace-pre-wrap">
 								{message.content}
+							</div>
+						) : message.answer_units ? (
+							<div>
+								{message.answer_units.units.map((unit) => {
+									const isVerbatim = unit.kind === "verbatim";
+									const hasSpan =
+										isVerbatim &&
+										unit.source_spans &&
+										unit.source_spans.length > 0;
+
+									return (
+										<span
+											key={unit.id}
+											className={cn(
+												"mr-1 inline transition-colors duration-200 rounded px-0.5 -mx-0.5 box-decoration-clone leading-relaxed",
+												isVerbatim && hasSpan
+													? "cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 border-b border-dotted border-blue-400 dark:border-blue-500"
+													: "text-slate-700 dark:text-slate-300",
+											)}
+											onClick={() => {
+												if (
+													hasSpan &&
+													onCitationClick
+												) {
+													const span =
+														unit.source_spans[0];
+													// Construct a temporary citation object for compatibility
+													// In a real scenario, we might want to pass the raw span
+													const sourceType =
+														mapDocIdToSourceType(
+															span.doc_id,
+														) as any;
+
+													const mockCitation: StructuredCitation =
+														{
+															source_type:
+																sourceType,
+															source_id:
+																span.section_id,
+															display: `${sourceType} ${span.section_id}`,
+															context_snippet:
+																span.quote,
+														};
+
+													onCitationClick(
+														mockCitation,
+														span,
+													);
+												}
+											}}
+											title={
+												isVerbatim
+													? "Click to view precise source"
+													: "Synthesized guidance - derived from sources"
+											}
+										>
+											<ReactMarkdown
+												components={{
+													p: ({ children }) => (
+														<span className="inline">
+															{children}
+														</span>
+													),
+												}}
+											>
+												{unit.text}
+											</ReactMarkdown>
+											{isVerbatim && (
+												<sup className="ml-0.5 text-blue-500 select-none">
+													🔗
+												</sup>
+											)}
+										</span>
+									);
+								})}
 							</div>
 						) : message.sentence_citations ? (
 							<div>

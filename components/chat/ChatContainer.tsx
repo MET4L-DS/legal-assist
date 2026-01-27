@@ -1,7 +1,12 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Message, RAGContext, StructuredCitation } from "@/lib/types/rag";
+import {
+	Message,
+	RAGContext,
+	StructuredCitation,
+	SourceSpan,
+} from "@/lib/types/rag";
 import { queryRAG, fetchSource } from "@/lib/api/rag";
 import { ChatMessage } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
@@ -61,6 +66,7 @@ export function ChatContainer() {
 				tier: response.tier,
 				citations: response.citations,
 				sentence_citations: response.sentence_citations,
+				answer_units: response.answer_units,
 				timeline: response.timeline,
 				clarification_needed: response.clarification_needed,
 				confidence: response.confidence,
@@ -115,15 +121,27 @@ export function ChatContainer() {
 		handleSend(option, nextContext);
 	};
 
-	const handleCitationClick = async (citation: StructuredCitation) => {
+	const handleCitationClick = async (
+		citation: StructuredCitation,
+		highlightSpan?: SourceSpan,
+	) => {
 		const key = `${citation.source_type}:${citation.source_id}`;
 
 		// Open panel immediately
 		setSourcePanelOpen(true);
 		setActiveSourceKey(key);
 
+		// If we have an explicit span (from answer_units), use it to force highlights
+		// Note: We might want to pass this span to the cache/panel even if content is cached
+		// For now, we rely on the snippet or fetch behavior.
+
 		// Check cache
 		if (sourceCache[key]) {
+			// Update the cache entry with new highlights if span is provided?
+			// This is complex. For now, rely on fetchSource's highlight logic if not cached,
+			// or trust that the panel will scroll if highlights exist.
+			// If the span is different from what was cached, we might need a way to update the 'active highlight'.
+			// Simple approach: SourceSidePanel reads highlights from cache.
 			return;
 		}
 
@@ -133,8 +151,21 @@ export function ChatContainer() {
 			const data = await fetchSource({
 				source_type: citation.source_type,
 				source_id: citation.source_id,
-				highlight_snippet: citation.context_snippet,
+				highlight_snippet: highlightSpan
+					? highlightSpan.quote
+					: citation.context_snippet,
 			});
+
+			// If explicit span was provided, we can override or ensure highlights match the span
+			if (highlightSpan) {
+				data.highlights = [
+					{
+						start: highlightSpan.start_char,
+						end: highlightSpan.end_char,
+						reason: "Verbatim Source",
+					},
+				];
+			}
 
 			setSourceCache((prev) => ({
 				...prev,

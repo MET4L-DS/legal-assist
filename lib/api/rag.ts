@@ -9,6 +9,7 @@ const BASE_URL =
 	process.env.NEXT_PUBLIC_RAG_API_BASE || "http://127.0.0.1:8000";
 
 export async function queryRAG(request: RAGRequest): Promise<RAGResponse> {
+	console.log(`📡 [API] queryRAG to ${BASE_URL}/rag/query`, request);
 	const response = await fetch(`${BASE_URL}/rag/query`, {
 		method: "POST",
 		headers: {
@@ -30,6 +31,7 @@ export async function queryRAG(request: RAGRequest): Promise<RAGResponse> {
 	}
 
 	const data = await response.json();
+	console.log("📡 [API] queryRAG Response payload:", data);
 
 	// Map backend response structure to frontend RAGResponse type
 	return {
@@ -39,6 +41,7 @@ export async function queryRAG(request: RAGRequest): Promise<RAGResponse> {
 		stage: data.tier_info?.detected_stages?.[0] || null,
 		citations: data.citations || [],
 		sentence_citations: data.sentence_citations || null,
+		answer_units: data.answer_units || null,
 		timeline: data.timeline || [],
 		clarification_needed: data.clarification_needed
 			? {

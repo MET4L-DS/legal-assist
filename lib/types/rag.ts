@@ -35,6 +35,26 @@ export interface SentenceCitations {
 	mapping: Record<string, string[]>; // sid -> ["source_type:source_id", ...]
 }
 
+export interface SourceSpan {
+	doc_id: string;
+	section_id: string;
+	start_char: number;
+	end_char: number;
+	quote: string;
+}
+
+export interface AnswerUnit {
+	id: string;
+	text: string;
+	kind: "verbatim" | "derived";
+	source_spans: SourceSpan[];
+	supporting_sources: string[];
+}
+
+export interface AnswerUnitsResponse {
+	units: AnswerUnit[];
+}
+
 export type RAGResponse = {
 	answer: string;
 	tier:
@@ -47,6 +67,7 @@ export type RAGResponse = {
 	stage: string | null;
 	citations: StructuredCitation[];
 	sentence_citations?: SentenceCitations;
+	answer_units?: AnswerUnitsResponse;
 	timeline: TimelineItem[];
 	clarification_needed?: {
 		type: string;
@@ -79,6 +100,7 @@ export type Message = {
 	tier?: RAGResponse["tier"];
 	citations?: StructuredCitation[];
 	sentence_citations?: SentenceCitations;
+	answer_units?: AnswerUnitsResponse;
 	timeline?: TimelineItem[];
 	clarification_needed?: RAGResponse["clarification_needed"];
 	confidence?: RAGResponse["confidence"];

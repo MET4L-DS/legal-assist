@@ -17,6 +17,7 @@ export function SearchSection({ onSearch, isLoading }: SearchSectionProps) {
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
 		if (query.trim()) {
+			console.log("[UI/SearchSection] Query submitted:", query);
 			onSearch(query);
 		}
 	};

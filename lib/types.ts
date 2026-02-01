@@ -7,11 +7,14 @@ export interface Source {
 
 export interface LegalResponse {
 	answer: string;
+	safety_alert?: string;
+	immediate_action_plan?: string[];
 	legal_basis: string;
 	procedure_steps?: string[];
-	important_notes?: string[];
 	sources: Source[];
 	metadata: {
+		intent?: string;
+		user_context?: "victim_distress" | "professional" | "informational";
 		category?: string;
 		confidence?: number;
 	};

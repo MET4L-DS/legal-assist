@@ -2,6 +2,12 @@ import { LegalQueryRequest, LegalResponse } from "./types";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
+if (!process.env.NEXT_PUBLIC_API_URL && process.env.NODE_ENV === "production") {
+	console.warn(
+		"[API] NEXT_PUBLIC_API_URL is not set. Falling back to localhost:8000 in production!",
+	);
+}
+
 export async function fetchLegalAnswer(query: string): Promise<LegalResponse> {
 	console.log("[API] Fetching legal answer for query:", query);
 

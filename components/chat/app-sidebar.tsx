@@ -79,9 +79,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 					</Button>
 				</div>
 
-				<SidebarGroup>
-					<SidebarGroupLabel>Recent History</SidebarGroupLabel>
-					<SidebarGroupContent>
+				<SidebarGroup className="relative overflow-hidden group/history">
+					<SidebarGroupLabel className="group-hover/history:opacity-20 transition-opacity">
+						Recent History
+					</SidebarGroupLabel>
+					<SidebarGroupContent className="group-hover/history:blur-[2px] blur-[1px] transition-all opacity-40 select-none pointer-events-none">
 						<SidebarMenu>
 							{recentChats.map((chat) => (
 								<SidebarMenuItem key={chat.title}>
@@ -93,6 +95,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 							))}
 						</SidebarMenu>
 					</SidebarGroupContent>
+					<div className="absolute inset-x-0 bottom-4 flex items-center justify-center p-4">
+						<div className="bg-primary/10 backdrop-blur-md border border-primary/20 text-primary text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full shadow-sm">
+							Coming Soon
+						</div>
+					</div>
 				</SidebarGroup>
 			</SidebarContent>
 			<SidebarFooter>

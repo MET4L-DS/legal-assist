@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "motion/react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
+import { BlurFade } from "@/components/ui/blur-fade";
 
 interface Message {
 	id: string;
@@ -153,50 +154,73 @@ export default function Home() {
 				<ScrollArea className="flex-1 pr-4">
 					{messages.length === 0 ? (
 						<div className="flex-1 flex flex-col items-center justify-center h-full min-h-[400px] text-center space-y-12 px-4 relative overflow-hidden">
-							<motion.div
-								initial={{ opacity: 0, scale: 0.95 }}
-								animate={{ opacity: 1, scale: 1 }}
-								transition={{ duration: 0.5 }}
-								className="space-y-6 max-w-2xl relative z-10"
-							>
-								<div className="bg-primary/5 p-6 rounded-full mb-6 inline-block ring-1 ring-primary/10 shadow-sm">
-									<Scale className="h-14 w-14 text-primary/80" />
-								</div>
-								<h1 className="text-4xl md:text-5xl font-playfair font-semibold tracking-tight text-foreground/90 leading-tight">
-									Legal Assist AI
-								</h1>
-								<p className="text-muted-foreground text-lg leading-relaxed max-w-lg mx-auto">
-									Your personal counsel for Indian Law. <br />
-									Simplifying justice, one question at a time.
-								</p>
-							</motion.div>
+							<div className="space-y-6 max-w-2xl relative z-10">
+								<BlurFade delay={0.1} inView>
+									<div className="bg-primary/5 p-6 rounded-full mb-6 inline-block ring-1 ring-primary/10 shadow-sm">
+										<Scale className="h-14 w-14 text-primary/80" />
+									</div>
+								</BlurFade>
+								<BlurFade delay={0.2} inView>
+									<h1 className="text-4xl md:text-5xl font-playfair font-semibold tracking-tight text-foreground/90 leading-tight">
+										Legal Assist AI
+									</h1>
+								</BlurFade>
+								<BlurFade delay={0.3} inView>
+									<p className="text-muted-foreground text-lg leading-relaxed max-w-lg mx-auto">
+										Your personal counsel for Indian Law.{" "}
+										<br />
+										Simplifying justice, one question at a
+										time.
+									</p>
+								</BlurFade>
+							</div>
 
-							{/* Animated Text Carousel (No more cards) */}
-							<div className="h-16 w-full max-w-md mx-auto relative overflow-hidden flex items-center justify-center">
+							{/* Animated Text Carousel */}
+							{/* Animated Text Carousel */}
+							<div className="h-24 w-full max-w-xl mx-auto relative flex items-center justify-center">
 								<AnimatePresence mode="wait">
 									<motion.div
 										key={currentSuggestionIndex}
-										initial={{ opacity: 0, y: 20 }}
-										animate={{ opacity: 1, y: 0 }}
-										exit={{ opacity: 0, y: -20 }}
+										initial="hidden"
+										animate="visible"
+										exit="exit"
+										variants={{
+											hidden: {
+												y: 20,
+												opacity: 0,
+												filter: "blur(5px)",
+											},
+											visible: {
+												y: 0,
+												opacity: 1,
+												filter: "blur(0px)",
+											},
+											exit: {
+												y: -20,
+												opacity: 0,
+												filter: "blur(5px)",
+											},
+										}}
 										transition={{
 											duration: 0.5,
 											ease: "easeInOut",
 										}}
 										className="absolute w-full text-center"
 									>
-										<p className="text-sm font-medium text-primary/70 bg-primary/5 px-4 py-2 rounded-full inline-block border border-primary/10 backdrop-blur-sm">
-											<span className="opacity-60 mr-2">
+										<div className="inline-block bg-primary/5 px-6 py-3 rounded-full border border-primary/10 backdrop-blur-sm">
+											<span className="text-sm font-medium text-muted-foreground mr-2 opacity-70">
 												Try asking:
 											</span>
-											"
-											{
-												carouselSuggestions[
-													currentSuggestionIndex
-												]
-											}
-											"
-										</p>
+											<span className="text-sm font-medium text-primary/90">
+												"
+												{
+													carouselSuggestions[
+														currentSuggestionIndex
+													]
+												}
+												"
+											</span>
+										</div>
 									</motion.div>
 								</AnimatePresence>
 							</div>
@@ -226,7 +250,7 @@ export default function Home() {
 
 							{isLoading && (
 								<MessageBubble role="assistant">
-									<div className="flex items-center gap-2 text-muted-foreground">
+									<div className="flex items-center gap-2 text-muted-foreground h-8">
 										<Loader2 className="h-4 w-4 animate-spin" />
 										<span className="text-sm font-medium animate-pulse">
 											Analyzing legal precedents...
@@ -245,22 +269,26 @@ export default function Home() {
 						onSubmit={handleSearch}
 						className="relative flex items-center gap-2 p-1 border rounded-xl shadow-sm focus-within:ring-2 focus-within:ring-primary/20 transition-all bg-card"
 					>
+						{/* Custom Placeholder Overlay */}
+						{!query && (
+							<div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground/50 text-base md:text-sm font-normal flex items-center">
+								{placeholderText}
+								<span className="ml-[1px] inline-block w-[1.5px] h-4 bg-primary/50 animate-pulse" />
+							</div>
+						)}
+
 						<Input
 							value={query}
 							onChange={(e) => setQuery(e.target.value)}
-							placeholder={
-								query
-									? ""
-									: placeholderText + (isTyping ? "|" : "")
-							}
-							className="flex-1 border-none shadow-none focus-visible:ring-0 min-h-[48px] placeholder:text-muted-foreground/50 transition-all"
+							placeholder="" /* Handled by custom overlay */
+							className="flex-1 border-none shadow-none focus-visible:ring-0 min-h-[48px] bg-transparent relative z-10"
 							autoFocus
 						/>
 						<Button
 							type="submit"
 							size="icon"
 							disabled={isLoading || !query.trim()}
-							className="rounded-lg h-9 w-9 mr-1"
+							className="rounded-lg h-9 w-9 mr-1 relative z-10"
 						>
 							<SendHorizontal className="h-4 w-4" />
 						</Button>

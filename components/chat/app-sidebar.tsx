@@ -104,7 +104,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 			</SidebarContent>
 			<SidebarFooter>
 				<div className="p-4 text-xs text-center text-muted-foreground">
-					&copy; 2024 Legal Assist AI
+					&copy; 2026 Legal Assist AI
 				</div>
 			</SidebarFooter>
 			<SidebarRail />

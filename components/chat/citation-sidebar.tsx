@@ -14,6 +14,8 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Source } from "@/lib/types";
 import { BookOpen, Scale } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface CitationSidebarProps {
 	open: boolean;
@@ -80,9 +82,13 @@ export function CitationSidebar({
 											<div className="bg-muted/30 p-2 rounded border mb-2 font-mono text-xs text-muted-foreground inline-block">
 												{source.citation}
 											</div>
-											{/* Full Text */}
-											<div className="pl-1 border-l-2 border-primary/20">
-												{source.text}
+											{/* Full Text as Markdown */}
+											<div className="pl-1 border-l-2 border-primary/20 prose prose-sm dark:prose-invert prose-p:leading-relaxed prose-pre:bg-muted font-normal max-w-none">
+												<ReactMarkdown
+													remarkPlugins={[remarkGfm]}
+												>
+													{source.text}
+												</ReactMarkdown>
 											</div>
 										</AccordionContent>
 									</AccordionItem>

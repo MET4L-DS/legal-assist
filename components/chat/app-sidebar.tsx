@@ -52,7 +52,11 @@ const recentChats = [
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	return (
-		<Sidebar collapsible="icon" {...props}>
+		<Sidebar
+			collapsible="icon"
+			className="bg-background/95 backdrop-blur-sm"
+			{...props}
+		>
 			<SidebarHeader>
 				<div className="flex items-center gap-2 px-4 py-2 text-sidebar-foreground">
 					<div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">

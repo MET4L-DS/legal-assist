@@ -53,13 +53,32 @@ export function ChatResponse({ data, onOpenCitation }: ChatResponseProps) {
 	};
 
 	// Helper to linkify citations in the text
+	// Create a map for fast lookup of UIDs by their display label
+	const citationMap = new Map<string, string>();
+	if (data.sources) {
+		data.sources.forEach((source) => {
+			if (source.chip_label && source.uid) {
+				citationMap.set(source.chip_label, source.uid);
+			}
+		});
+	}
+
 	// Helper to linkify citations in the text
 	const processText = (text: string) => {
-		// Replace [BNS:115] etc with markdown links [BNS:115](#source-BNS_115)
+		// Replace [BNS:115] or [SOP:S01] with markdown links
+		// Regex supports alphanumeric sections (e.g. S01, 12A)
 		return text.replace(
-			/\[([A-Z]+)(?::(\d+))?\]/g,
+			/\[([A-Z]+)(?::([A-Z0-9]+))?\]/g,
 			(match, law, section) => {
-				const uid = section ? `${law}_${section}` : `${law}_GENERAL`;
+				// Try to find exact UID from the chip label map
+				// If backend sends [SOP:S01] -> SOP_STEP_01, we use that.
+				const resolvedUid = citationMap.get(match);
+
+				// Fallback logic if chip not found in sources (e.g. streaming partial)
+				const uid =
+					resolvedUid ||
+					(section ? `${law}_${section}` : `${law}_GENERAL`);
+
 				return `[${law}${section ? `:${section}` : ""}](#source-${uid})`;
 			},
 		);

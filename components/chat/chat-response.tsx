@@ -14,7 +14,7 @@ import { motion } from "motion/react";
 
 interface ChatResponseProps {
 	data: LegalResponse;
-	onOpenCitation: () => void;
+	onOpenCitation: (uid?: string) => void;
 }
 
 export function ChatResponse({ data, onOpenCitation }: ChatResponseProps) {
@@ -50,6 +50,19 @@ export function ChatResponse({ data, onOpenCitation }: ChatResponseProps) {
 
 	const toggleStep = (idx: number) => {
 		setCheckedSteps((prev) => ({ ...prev, [idx]: !prev[idx] }));
+	};
+
+	// Helper to linkify citations in the text
+	// Helper to linkify citations in the text
+	const processText = (text: string) => {
+		// Replace [BNS:115] etc with markdown links [BNS:115](#source-BNS_115)
+		return text.replace(
+			/\[([A-Z]+)(?::(\d+))?\]/g,
+			(match, law, section) => {
+				const uid = section ? `${law}_${section}` : `${law}_GENERAL`;
+				return `[${law}${section ? `:${section}` : ""}](#source-${uid})`;
+			},
+		);
 	};
 
 	return (
@@ -138,7 +151,48 @@ export function ChatResponse({ data, onOpenCitation }: ChatResponseProps) {
 				</div>
 
 				<article className="prose prose-sm max-w-none prose-slate prose-p:leading-relaxed prose-strong:font-semibold prose-strong:text-foreground">
-					<ReactMarkdown>{displayedText}</ReactMarkdown>
+					<ReactMarkdown
+						components={{
+							a: ({ href, children, ...props }) => {
+								if (href?.startsWith("#source-")) {
+									const uid = href.replace("#source-", "");
+									return (
+										<button
+											className="relative top-[-2px] inline-flex items-center justify-center bg-zinc-900 text-zinc-50 font-bold hover:bg-zinc-800 mx-1 px-1 py-0.2 rounded-full text-[8px] select-none transition-colors border border-black/10 align-baseline cursor-pointer h-fit"
+											onMouseDown={(e) => {
+												e.preventDefault();
+												e.stopPropagation();
+												console.log(
+													`[ChatResponse] Citation clicked: ${uid}`,
+												);
+												onOpenCitation(uid);
+											}}
+											tabIndex={0}
+											onKeyDown={(e) => {
+												if (
+													e.key === "Enter" ||
+													e.key === " "
+												) {
+													e.preventDefault();
+													e.stopPropagation();
+													onOpenCitation(uid);
+												}
+											}}
+										>
+											{children}
+										</button>
+									);
+								}
+								return (
+									<a href={href} {...props}>
+										{children}
+									</a>
+								);
+							},
+						}}
+					>
+						{processText(displayedText)}
+					</ReactMarkdown>
 				</article>
 			</div>
 
@@ -180,7 +234,7 @@ export function ChatResponse({ data, onOpenCitation }: ChatResponseProps) {
 					<Badge
 						variant="outline"
 						className="cursor-pointer hover:bg-muted transition-colors font-normal text-xs px-2 py-0.5 gap-1.5 h-6 text-muted-foreground hover:text-foreground"
-						onClick={onOpenCitation}
+						onClick={() => onOpenCitation()}
 					>
 						<BookOpen className="h-3 w-3" />
 						<span>{data.sources.length} Sources</span>
@@ -190,7 +244,12 @@ export function ChatResponse({ data, onOpenCitation }: ChatResponseProps) {
 						<span
 							key={idx}
 							className="text-[10px] text-muted-foreground/60 hover:text-primary cursor-pointer transition-colors max-w-[150px] truncate"
-							onClick={onOpenCitation}
+							onClick={() => {
+								console.log(
+									`[ChatResponse] Source chip clicked: ${source.uid}`,
+								);
+								onOpenCitation(source.uid);
+							}}
 						>
 							{source.law}
 						</span>

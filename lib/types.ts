@@ -1,4 +1,7 @@
 export interface Source {
+	uid: string; // "BNS_115"
+	chip_label: string; // "[BNS:115]"
+	id?: number; // Deprecated
 	law: string;
 	section: string;
 	citation: string;

@@ -27,7 +27,19 @@ export default function Home() {
 	const [isLoading, setIsLoading] = useState(false);
 	const [query, setQuery] = useState("");
 	const [sidebarOpen, setSidebarOpen] = useState(false);
-	const [activeSources, setActiveSources] = useState<Source[]>([]);
+
+	// Global Source Inventory: Map<uid, Source> to prevent duplicates
+	const [sourceInventory, setSourceInventory] = useState<Map<string, Source>>(
+		new Map(),
+	);
+	// Currently visible sources in the sidebar (Dynamic Loading)
+	const [visibleSources, setVisibleSources] = useState<Map<string, Source>>(
+		new Map(),
+	);
+
+	const [activeCitationUid, setActiveCitationUid] = useState<string | null>(
+		null,
+	);
 	const scrollRef = useRef<HTMLDivElement>(null);
 
 	// Typing Animation State
@@ -127,6 +139,20 @@ export default function Home() {
 
 		try {
 			const response = await fetchLegalAnswer(currentQuery);
+
+			// Populate Global Inventory (Invisible to UI until interacted with)
+			if (response.sources && response.sources.length > 0) {
+				setSourceInventory((prev) => {
+					const newInventory = new Map(prev);
+					response.sources.forEach((src) => {
+						if (src.uid && !newInventory.has(src.uid)) {
+							newInventory.set(src.uid, src);
+						}
+					});
+					return newInventory;
+				});
+			}
+
 			const aiMsg: Message = {
 				id: (Date.now() + 1).toString(),
 				role: "assistant",
@@ -135,15 +161,32 @@ export default function Home() {
 			};
 			setMessages((prev) => [...prev, aiMsg]);
 		} catch (error) {
-			// Ideally add an error message bubble
 			console.error(error);
 		} finally {
 			setIsLoading(false);
 		}
 	};
 
-	const openCitations = (sources: Source[]) => {
-		setActiveSources(sources);
+	// Promote sources from inventory to visible list on demand
+	const openCitations = (uid?: string, contextSources?: Source[]) => {
+		if (uid) {
+			// Find in inventory and promote
+			const source = sourceInventory.get(uid);
+			if (source) {
+				setVisibleSources((prev) => new Map(prev).set(uid, source));
+			}
+		} else if (contextSources) {
+			// Bulk promote from the clicked message context
+			setVisibleSources((prev) => {
+				const next = new Map(prev);
+				contextSources.forEach((src) => {
+					if (src.uid) next.set(src.uid, src);
+				});
+				return next;
+			});
+		}
+
+		setActiveCitationUid(uid || null);
 		setSidebarOpen(true);
 	};
 
@@ -237,8 +280,9 @@ export default function Home() {
 										msg.data && (
 											<ChatResponse
 												data={msg.data}
-												onOpenCitation={() =>
+												onOpenCitation={(uid) =>
 													openCitations(
+														uid,
 														msg.data!.sources,
 													)
 												}
@@ -303,7 +347,8 @@ export default function Home() {
 			<CitationSidebar
 				open={sidebarOpen}
 				onOpenChange={setSidebarOpen}
-				sources={activeSources}
+				sources={Array.from(visibleSources.values())}
+				activeCitationUid={activeCitationUid}
 			/>
 		</ChatLayout>
 	);
